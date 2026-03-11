@@ -1,0 +1,50 @@
+<idea-plugin>
+    <id>com.codereview.plugin</id>
+    <name>Code Review Helper</name>
+    <vendor email="JGrekov@gmail.com" url="">Code Review Helper</vendor>
+
+    <description><![CDATA[
+        Simple code review tool for PhpStorm.
+        Start review, add comments with Ctrl+Alt+R, export to Redmine format.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow
+            id="Code Review"
+            anchor="bottom"
+            factoryClass="com.codereview.plugin.ReviewToolWindowFactory"/>
+
+        <projectService
+            serviceInterface="com.codereview.plugin.ReviewState"
+            serviceImplementation="com.codereview.plugin.ReviewState"/>
+    </extensions>
+
+    <actions>
+        <action
+            id="CodeReview.StartReview"
+            class="com.codereview.plugin.actions.StartReviewAction"
+            text="Start Review"
+            description="Start a new code review session">
+            <add-to-group group-id="RunnerActions" anchor="last"/>
+        </action>
+
+        <action
+            id="CodeReview.FinishReview"
+            class="com.codereview.plugin.actions.FinishReviewAction"
+            text="Finish Review"
+            description="Finish review and generate Redmine report">
+            <add-to-group group-id="RunnerActions" anchor="last"/>
+        </action>
+
+        <action
+            id="CodeReview.AddComment"
+            class="com.codereview.plugin.actions.AddCommentAction"
+            text="Add Review Comment"
+            description="Add a review comment for selected code">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
