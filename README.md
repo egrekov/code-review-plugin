@@ -59,12 +59,12 @@ public function actionIndex(){
 ./gradlew buildPlugin
 ```
 
-Плагин появится в `build/distributions/code-review-plugin-1.0.0.zip`
+Плагин появится в `build/distributions/code-review-plugin-1.0.1.zip`
 
 ### Установка в PhpStorm
 
 1. **Settings → Plugins → ⚙️ → Install Plugin from Disk...**
-2. Выбрать `build/distributions/code-review-plugin-1.0.0.zip`
+2. Выбрать `build/distributions/code-review-plugin-1.0.1.zip`
 3. Перезапустить PhpStorm
 
 ### Запуск в dev-режиме
