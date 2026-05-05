@@ -8,7 +8,7 @@ data class ReviewComment(
     val filePath: String,
     val lineStart: Int,
     val lineEnd: Int,
-    val selectedText: String,
+    var selectedText: String,
     var comment: String = "",
     var reference: String = "",
     val timestamp: Long = System.currentTimeMillis()
@@ -52,10 +52,11 @@ class ReviewState {
         comments.removeIf { it.id == id }
     }
 
-    fun updateComment(id: Int, newComment: String, newReference: String) {
-        comments.find { it.id == id }?.let {
-            it.comment = newComment
-            it.reference = newReference
+    fun updateComment(id: Int, newComment: String, newReference: String, newSelectedText: String? = null) {
+        comments.find { it.id == id }?.let { comment ->
+            comment.comment = newComment
+            comment.reference = newReference
+            newSelectedText?.let { comment.selectedText = it }
         }
     }
 

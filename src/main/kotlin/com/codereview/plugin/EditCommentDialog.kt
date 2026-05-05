@@ -21,6 +21,12 @@ class EditCommentDialog(
         font = Font("Arial", Font.PLAIN, 13)
     }
 
+    private val codeArea = JBTextArea(dedent(comment.selectedText)).apply {
+        font = Font("JetBrains Mono", Font.PLAIN, 12)
+        rows = 4
+        lineWrap = true
+    }
+
     private fun dedent(text: String): String {
         val lines = text.split("\n")
         val indentedLines = lines.drop(1).filter { it.isNotBlank() }
@@ -64,16 +70,10 @@ class EditCommentDialog(
         refPanel.add(referenceField, BorderLayout.CENTER)
         centerPanel.add(refPanel, BorderLayout.NORTH)
 
-        if (comment.selectedText.isNotBlank()) {
-            val codePreview = JBTextArea(dedent(comment.selectedText)).apply {
-                isEditable = false
-                font = Font("JetBrains Mono", Font.PLAIN, 12)
-                rows = 4
-                lineWrap = true
-            }
+        if (codeArea.text.isNotBlank()) {
             val codePanel = JPanel(BorderLayout(0, 4))
             codePanel.add(JLabel("Selected code:"), BorderLayout.NORTH)
-            codePanel.add(JBScrollPane(codePreview), BorderLayout.CENTER)
+            codePanel.add(JBScrollPane(codeArea), BorderLayout.CENTER)
             centerPanel.add(codePanel, BorderLayout.CENTER)
         }
 
@@ -90,4 +90,5 @@ class EditCommentDialog(
 
     fun getComment(): String = commentArea.text.trim()
     fun getReference(): String = referenceField.text.trim()
+    fun getSelectedText(): String = codeArea.text.trim()
 }

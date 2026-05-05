@@ -147,7 +147,7 @@ class CommentCard(private val project: Project, private val comment: ReviewComme
                 override fun mouseClicked(e: MouseEvent) {
                     val dialog = EditCommentDialog(project, comment)
                     if (dialog.showAndGet()) {
-                        ReviewState.getInstance(project).updateComment(comment.id, dialog.getComment(), dialog.getReference())
+                        ReviewState.getInstance(project).updateComment(comment.id, dialog.getComment(), dialog.getReference(), dialog.getSelectedText())
                         ReviewToolWindowFactory.refresh(project)
                     }
                 }

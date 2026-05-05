@@ -53,7 +53,8 @@ class AddCommentAction : AnAction("Add Comment (Ctrl+Alt+R)", "Add a review comm
         val dialog = ReviewCommentDialog(project, filePath, lineStart, lineEnd, selectedText, reference)
         if (dialog.showAndGet()) {
             val finalReference = dialog.getReference()
-            val reviewComment = state.addComment(filePath, lineStart, lineEnd, selectedText, finalReference)
+            val finalSelectedText = dialog.getSelectedText()
+            val reviewComment = state.addComment(filePath, lineStart, lineEnd, finalSelectedText, finalReference)
             reviewComment.comment = dialog.getComment()
             ReviewToolWindowFactory.refresh(project)
         }

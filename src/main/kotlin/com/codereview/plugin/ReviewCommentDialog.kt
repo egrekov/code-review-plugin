@@ -15,7 +15,7 @@ class ReviewCommentDialog(
     private val filePath: String,
     private val lineStart: Int,
     private val lineEnd: Int,
-    private val selectedText: String,
+    selectedText: String,
     reference: String = ""
 ) : DialogWrapper(project) {
 
@@ -23,6 +23,12 @@ class ReviewCommentDialog(
         lineWrap = true
         wrapStyleWord = true
         font = Font("Arial", Font.PLAIN, 13)
+    }
+
+    private val codeArea = JBTextArea(dedent(selectedText)).apply {
+        font = Font("JetBrains Mono", Font.PLAIN, 12)
+        rows = 4
+        lineWrap = true
     }
 
     private fun dedent(text: String): String {
@@ -71,16 +77,10 @@ class ReviewCommentDialog(
         centerPanel.add(refPanel, BorderLayout.NORTH)
 
         // Code preview
-        if (selectedText.isNotBlank()) {
-            val codePreview = JBTextArea(dedent(selectedText)).apply {
-                isEditable = false
-                font = Font("JetBrains Mono", Font.PLAIN, 12)
-                rows = 4
-                lineWrap = true
-            }
+        if (codeArea.text.isNotBlank()) {
             val codePanel = JPanel(BorderLayout(0, 4))
             codePanel.add(JLabel("Selected code:"), BorderLayout.NORTH)
-            codePanel.add(JBScrollPane(codePreview), BorderLayout.CENTER)
+            codePanel.add(JBScrollPane(codeArea), BorderLayout.CENTER)
             centerPanel.add(codePanel, BorderLayout.CENTER)
         }
 
@@ -98,4 +98,5 @@ class ReviewCommentDialog(
 
     fun getComment(): String = commentArea.text.trim()
     fun getReference(): String = referenceField.text.trim()
+    fun getSelectedText(): String = codeArea.text.trim()
 }
