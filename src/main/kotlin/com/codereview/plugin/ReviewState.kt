@@ -84,12 +84,13 @@ class ReviewState {
         val sb = StringBuilder()
         sb.appendLine("{{Collapse(Ревью)")
 
-        comments.forEach { comment ->
+        comments.forEachIndexed { index, comment ->
+            val num = index + 1
             // Reference line
             if (comment.reference.isNotBlank()) {
-                sb.appendLine("# @${comment.reference}@ ${comment.comment}")
+                sb.appendLine("$num. @${comment.reference}@ ${comment.comment}")
             } else {
-                sb.appendLine("# ${comment.comment}")
+                sb.appendLine("$num. ${comment.comment}")
             }
 
             // Code block only if there's selected text
