@@ -154,7 +154,7 @@ class CommentCard(private val project: Project, private val comment: ReviewComme
             })
         }
 
-        val deleteBtn = JLabel("x").apply {
+        val deleteBtn = JLabel(AllIcons.Actions.GC).apply {
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             foreground = UIUtil.getLabelDisabledForeground()
             font = Font("Arial", Font.BOLD, 12)
