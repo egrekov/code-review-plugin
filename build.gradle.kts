@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.codereview"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         name = "Code Review Helper"
-        version = "1.0.2"
+        version = "1.0.3"
         description = "Simple code review tool with Redmine export"
         ideaVersion {
             sinceBuild = "243"
