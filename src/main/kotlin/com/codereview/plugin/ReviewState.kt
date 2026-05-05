@@ -86,18 +86,28 @@ class ReviewState {
 
         comments.forEachIndexed { index, comment ->
             val num = index + 1
-            // Reference line
+            val isLast = index == comments.size - 1
+            sb.append("$num. ")
             if (comment.reference.isNotBlank()) {
-                sb.appendLine("$num. @${comment.reference}@ ${comment.comment}")
-            } else {
-                sb.appendLine("$num. ${comment.comment}")
+                sb.appendLine("@${comment.reference}@")
             }
+            sb.appendLine()
 
-            // Code block only if there's selected text
             if (comment.selectedText.isNotBlank()) {
                 sb.appendLine("<pre><code class=\"php\">")
                 sb.appendLine(dedent(comment.selectedText))
                 sb.appendLine("</code></pre>")
+            }
+
+            if (comment.comment.isNotBlank()) {
+                if (comment.selectedText.isNotBlank()) {
+                    sb.appendLine()
+                }
+                sb.appendLine(comment.comment)
+            }
+
+            if (!isLast) {
+                sb.appendLine()
             }
         }
 
