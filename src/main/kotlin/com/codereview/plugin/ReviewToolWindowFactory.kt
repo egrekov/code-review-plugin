@@ -3,6 +3,7 @@ package com.codereview.plugin
 import com.codereview.plugin.actions.AddCommentAction
 import com.codereview.plugin.actions.FinishReviewAction
 import com.codereview.plugin.actions.StartReviewAction
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -139,6 +140,20 @@ class CommentCard(private val project: Project, private val comment: ReviewComme
             foreground = UIUtil.getLabelDisabledForeground()
         })
 
+        val editBtn = JLabel(AllIcons.Actions.Edit).apply {
+            cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+            toolTipText = "Edit comment"
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    val dialog = EditCommentDialog(project, comment)
+                    if (dialog.showAndGet()) {
+                        ReviewState.getInstance(project).updateComment(comment.id, dialog.getComment(), dialog.getReference())
+                        ReviewToolWindowFactory.refresh(project)
+                    }
+                }
+            })
+        }
+
         val deleteBtn = JLabel("x").apply {
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             foreground = UIUtil.getLabelDisabledForeground()
@@ -153,7 +168,8 @@ class CommentCard(private val project: Project, private val comment: ReviewComme
                 override fun mouseExited(e: MouseEvent) { foreground = UIUtil.getLabelDisabledForeground() }
             })
         }
-        val headerRight = JPanel(FlowLayout(FlowLayout.RIGHT, 0, 0)).apply { isOpaque = false }
+        val headerRight = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0)).apply { isOpaque = false }
+        headerRight.add(editBtn)
         headerRight.add(deleteBtn)
 
         val headerPanel = JPanel(BorderLayout()).apply { isOpaque = false }

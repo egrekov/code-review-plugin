@@ -10,7 +10,7 @@ data class ReviewComment(
     val lineEnd: Int,
     val selectedText: String,
     var comment: String = "",
-    val reference: String = "",
+    var reference: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )
 
@@ -50,6 +50,13 @@ class ReviewState {
 
     fun removeComment(id: Int) {
         comments.removeIf { it.id == id }
+    }
+
+    fun updateComment(id: Int, newComment: String, newReference: String) {
+        comments.find { it.id == id }?.let {
+            it.comment = newComment
+            it.reference = newReference
+        }
     }
 
     private fun dedent(text: String): String {
