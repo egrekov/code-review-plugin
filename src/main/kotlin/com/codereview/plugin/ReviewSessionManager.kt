@@ -4,11 +4,11 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.InputValidator
+import com.intellij.openapi.ui.Messages
 import git4idea.repo.GitRepositoryManager
 import java.io.File
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.UUID
 
 class ReviewSessionManager private constructor(private val project: Project) {
@@ -82,14 +82,24 @@ class ReviewSessionManager private constructor(private val project: Project) {
         activeSession?.let { save() }
     }
 
-    fun defaultSessionName(): String {
+    fun promptSessionName(): String? {
         val repos = GitRepositoryManager.getInstance(project).repositories
         val repo = repos.firstOrNull { it.root.path == project.basePath }
             ?: repos.firstOrNull()
-        val repoName = repo?.root?.name ?: project.name
         val branch = repo?.currentBranchName
-        val time = SimpleDateFormat("dd.MM.yyyy HH:mm").format(Date())
-        return if (branch != null) "$repoName [$branch] $time" else "$repoName $time"
+        if (branch != null) return branch
+        val name = Messages.showInputDialog(
+            project,
+            "Enter a name for the review session:",
+            "New Review Session",
+            Messages.getQuestionIcon(),
+            null,
+            object : InputValidator {
+                override fun checkInput(inputString: String): Boolean = inputString.isNotBlank()
+                override fun canClose(inputString: String): Boolean = inputString.isNotBlank()
+            }
+        )
+        return name?.trim()?.takeIf { it.isNotEmpty() }
     }
 
     private fun load(): MutableList<ReviewSession> {

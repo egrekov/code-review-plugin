@@ -231,7 +231,8 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun doNewSession() {
-        val newSession = manager.newSession(manager.defaultSessionName())
+        val name = manager.promptSessionName() ?: return
+        val newSession = manager.newSession(name)
         tableModel.fireTableDataChanged()
         val modelRow = manager.allSessions.indexOfFirst { it.id == newSession.id }
         if (modelRow >= 0) {

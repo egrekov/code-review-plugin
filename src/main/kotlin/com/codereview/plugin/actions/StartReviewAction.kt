@@ -15,7 +15,8 @@ class StartReviewAction : AnAction("Start Review", "Start a new code review sess
         val state = ReviewState.getInstance(project)
         val manager = ReviewSessionManager.getInstance(project)
 
-        state.startReview(manager.defaultSessionName())
+        val name = manager.promptSessionName() ?: return
+        state.startReview(name)
 
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Code Review")
         toolWindow?.show()
