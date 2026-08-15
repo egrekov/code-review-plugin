@@ -9,16 +9,13 @@
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
             id="Code Review"
             anchor="bottom"
             factoryClass="com.codereview.plugin.ReviewToolWindowFactory"/>
-
-        <projectService
-            serviceInterface="com.codereview.plugin.ReviewState"
-            serviceImplementation="com.codereview.plugin.ReviewState"/>
     </extensions>
 
     <actions>
@@ -45,6 +42,14 @@
             description="Add a review comment for selected code">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt R"/>
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+
+        <action
+            id="CodeReview.Sessions"
+            class="com.codereview.plugin.actions.SessionsAction"
+            text="Review Sessions"
+            description="Open saved review sessions">
+            <add-to-group group-id="RunnerActions" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

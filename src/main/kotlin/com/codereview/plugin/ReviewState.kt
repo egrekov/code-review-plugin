@@ -1,32 +1,24 @@
 package com.codereview.plugin
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 
-data class ReviewComment(
-    val id: Int,
-    val filePath: String,
-    val lineStart: Int,
-    val lineEnd: Int,
-    var selectedText: String,
-    var comment: String = "",
-    var reference: String = "",
-    val timestamp: Long = System.currentTimeMillis()
-)
+class ReviewState(private val project: Project) {
 
-class ReviewState {
-    var isReviewActive: Boolean = false
-    val comments: MutableList<ReviewComment> = mutableListOf()
-    private var commentIdCounter = 1
+    private val manager: ReviewSessionManager
+        get() = ReviewSessionManager.getInstance(project)
 
-    fun startReview() {
-        isReviewActive = true
-        comments.clear()
-        commentIdCounter = 1
+    val isReviewActive: Boolean
+        get() = manager.activeSession?.isActive == true
+
+    val comments: List<ReviewComment>
+        get() = manager.activeSession?.comments ?: emptyList()
+
+    fun startReview(name: String) {
+        manager.newSession(name)
     }
 
     fun stopReview() {
-        isReviewActive = false
+        manager.markActiveFinished()
     }
 
     fun addComment(
@@ -36,28 +28,35 @@ class ReviewState {
         selectedText: String,
         reference: String = ""
     ): ReviewComment {
+        val session = manager.activeSession ?: throw IllegalStateException("No active session")
         val comment = ReviewComment(
-            id = commentIdCounter++,
+            id = (session.comments.maxOfOrNull { it.id } ?: 0) + 1,
             filePath = filePath,
             lineStart = lineStart,
             lineEnd = lineEnd,
             selectedText = selectedText,
             reference = reference
         )
-        comments.add(comment)
+        session.comments.add(comment)
+        session.isActive = true
+        manager.saveActiveSession()
         return comment
     }
 
     fun removeComment(id: Int) {
-        comments.removeIf { it.id == id }
+        val session = manager.activeSession ?: return
+        session.comments.removeIf { it.id == id }
+        manager.saveActiveSession()
     }
 
     fun updateComment(id: Int, newComment: String, newReference: String, newSelectedText: String? = null) {
-        comments.find { it.id == id }?.let { comment ->
+        val session = manager.activeSession ?: return
+        session.comments.find { it.id == id }?.let { comment ->
             comment.comment = newComment
             comment.reference = newReference
             newSelectedText?.let { comment.selectedText = it }
         }
+        manager.saveActiveSession()
     }
 
     private fun dedent(text: String): String {
@@ -116,6 +115,6 @@ class ReviewState {
     }
 
     companion object {
-        fun getInstance(project: Project): ReviewState = project.service()
+        fun getInstance(project: Project): ReviewState = ReviewState(project)
     }
 }

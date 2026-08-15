@@ -17,9 +17,11 @@ repositories {
 dependencies {
     intellijPlatform {
         phpstorm("2025.1")
+        bundledPlugin("com.intellij.modules.vcs")
+        bundledPlugin("Git4Idea")
     }
+    implementation("com.google.code.gson:gson:2.10.1")
 }
-
 
 intellijPlatform {
     pluginConfiguration {

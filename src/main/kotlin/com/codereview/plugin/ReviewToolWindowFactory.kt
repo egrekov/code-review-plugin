@@ -2,6 +2,7 @@ package com.codereview.plugin
 
 import com.codereview.plugin.actions.AddCommentAction
 import com.codereview.plugin.actions.FinishReviewAction
+import com.codereview.plugin.actions.SessionsAction
 import com.codereview.plugin.actions.StartReviewAction
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
@@ -23,9 +24,10 @@ class ReviewToolWindowFactory : ToolWindowFactory {
         val content = ContentFactory.getInstance().createContent(panel, "", false)
         toolWindow.contentManager.addContent(content)
 
-        // Add Start, Add Comment, Finish buttons to the tool window title bar
+        // Add Start, Sessions, Add Comment, Finish buttons to the tool window title bar
         toolWindow.setTitleActions(listOf(
             StartReviewAction(),
+            SessionsAction(),
             AddCommentAction(),
             FinishReviewAction()
         ))
@@ -64,6 +66,7 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
     fun refresh() {
         SwingUtilities.invokeLater {
             val state = ReviewState.getInstance(project)
+            val sessionName = ReviewSessionManager.getInstance(project).activeSession?.name
             commentsPanel.removeAll()
 
             when {
@@ -80,7 +83,7 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
                     commentsPanel.add(Box.createVerticalGlue())
                 }
                 state.isReviewActive -> {
-                    statusLabel.text = "🟢 In progress — ${state.comments.size} comment(s)"
+                    statusLabel.text = "🟢 $sessionName — ${state.comments.size} comment(s)"
                     if (state.comments.isEmpty()) {
                         val hint = JLabel("<html><center>Select code and press <b>Ctrl+Alt+R</b><br>or click <b>+</b> button above to add a comment</center></html>").apply {
                             horizontalAlignment = SwingConstants.CENTER
@@ -99,7 +102,7 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
                     }
                 }
                 else -> {
-                    statusLabel.text = "Finished — ${state.comments.size} comment(s)"
+                    statusLabel.text = "Finished — $sessionName — ${state.comments.size} comment(s)"
                     state.comments.forEach { comment ->
                         commentsPanel.add(CommentCard(project, comment))
                         commentsPanel.add(Box.createVerticalStrut(6))
