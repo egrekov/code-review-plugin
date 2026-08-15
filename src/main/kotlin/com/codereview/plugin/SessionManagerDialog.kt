@@ -8,6 +8,7 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -16,29 +17,50 @@ import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.text.SimpleDateFormat
+import java.util.Date
 import javax.swing.*
 import javax.swing.table.AbstractTableModel
+import javax.swing.table.DefaultTableCellRenderer
+import javax.swing.table.TableCellRenderer
+import javax.swing.table.TableColumn
+import javax.swing.table.TableRowSorter
 
 class SessionManagerDialog(private val project: Project) : DialogWrapper(project) {
 
     private val manager = ReviewSessionManager.getInstance(project)
-    private val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm")
+    private val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+
+    companion object {
+        private const val ACTIVE_COLUMN = 0
+        private const val NAME_COLUMN = 1
+        private const val STATUS_COLUMN = 2
+        private const val COMMENTS_COLUMN = 3
+        private const val CREATED_COLUMN = 4
+    }
 
     private val tableModel = object : AbstractTableModel() {
-        private val columns = arrayOf("Name", "Status", "Comments", "Created")
+        private val columns = arrayOf("", "Name", "Status", "Comments", "Created")
 
         override fun getRowCount(): Int = manager.allSessions.size
         override fun getColumnCount(): Int = columns.size
         override fun getColumnName(column: Int): String = columns[column]
-        override fun getColumnClass(columnIndex: Int): Class<*> = String::class.java
+
+        override fun getColumnClass(columnIndex: Int): Class<*> = when (columnIndex) {
+            ACTIVE_COLUMN -> Integer::class.java
+            NAME_COLUMN -> String::class.java
+            STATUS_COLUMN -> String::class.java
+            COMMENTS_COLUMN -> Integer::class.java
+            else -> Long::class.java
+        }
 
         override fun getValueAt(row: Int, column: Int): Any {
             val session = manager.allSessions[row]
             return when (column) {
-                0 -> session.name
-                1 -> if (session.isActive) "In progress" else "Finished"
-                2 -> session.comments.size.toString()
-                else -> dateFormat.format(java.util.Date(session.createdAt))
+                ACTIVE_COLUMN -> if (session.id == manager.activeSessionId()) 1 else 0
+                NAME_COLUMN -> session.name
+                STATUS_COLUMN -> if (session.isActive) "In progress" else "Finished"
+                COMMENTS_COLUMN -> session.comments.size
+                else -> session.createdAt
             }
         }
     }
@@ -57,6 +79,7 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
         }
 
     private val table = JBTable(tableModel).apply {
+        autoCreateRowSorter = true
         selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
         rowSelectionAllowed = true
         showVerticalLines = false
@@ -67,6 +90,46 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
                 }
             }
         })
+    }
+
+    private val activeCellRenderer = object : TableCellRenderer {
+        private val activeLabel = JLabel(AllIcons.Actions.Checked).apply {
+            horizontalAlignment = SwingConstants.CENTER
+            isOpaque = false
+        }
+        private val emptyLabel = JLabel().apply {
+            horizontalAlignment = SwingConstants.CENTER
+            isOpaque = false
+        }
+
+        override fun getTableCellRendererComponent(
+            table: JTable,
+            value: Any?,
+            isSelected: Boolean,
+            hasFocus: Boolean,
+            row: Int,
+            column: Int
+        ): Component = if (value == 1) activeLabel else emptyLabel
+    }
+
+    private val createdCellRenderer = object : TableCellRenderer {
+        private val renderer = DefaultTableCellRenderer()
+
+        override fun getTableCellRendererComponent(
+            table: JTable,
+            value: Any?,
+            isSelected: Boolean,
+            hasFocus: Boolean,
+            row: Int,
+            column: Int
+        ): Component {
+            val text = (value as? Long)?.let { dateFormat.format(Date(it)) } ?: ""
+            return renderer.getTableCellRendererComponent(table, text, isSelected, hasFocus, row, column)
+        }
+    }
+
+    private val newButton = toolbarButton(AllIcons.General.Add, "New session") {
+        doNewSession()
     }
 
     private val renameButton = toolbarButton(AllIcons.Actions.Edit, "Rename session") {
@@ -89,7 +152,30 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
         setCancelButtonText("Close")
         init()
 
-        table.removeColumn(table.columnModel.getColumn(1))
+        table.columnModel.getColumn(ACTIVE_COLUMN).apply {
+            minWidth = 28
+            maxWidth = 28
+            preferredWidth = 28
+            cellRenderer = activeCellRenderer
+        }
+        table.columnModel.getColumn(NAME_COLUMN).apply {
+            minWidth = 150
+            preferredWidth = 300
+        }
+        table.columnModel.getColumn(COMMENTS_COLUMN).apply {
+            minWidth = 50
+            maxWidth = 80
+            preferredWidth = 70
+        }
+        table.columnModel.getColumn(CREATED_COLUMN).apply {
+            preferredWidth = 140
+            cellRenderer = createdCellRenderer
+        }
+        table.removeColumn(viewColumn(STATUS_COLUMN))
+
+        (table.rowSorter as TableRowSorter<*>).setSortKeys(
+            listOf(RowSorter.SortKey(CREATED_COLUMN, SortOrder.DESCENDING))
+        )
 
         table.selectionModel.addListSelectionListener { updateButtons() }
 
@@ -101,9 +187,10 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout(8, 8))
-        panel.preferredSize = Dimension(560, 320)
+        panel.preferredSize = Dimension(620, 320)
 
         val toolbar = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)).apply { isOpaque = false }
+        toolbar.add(newButton)
         toolbar.add(renameButton)
         toolbar.add(deleteButton)
         toolbar.add(clearAllButton)
@@ -134,8 +221,31 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
         clearAllButton.isEnabled = hasSessions
     }
 
-    private fun renameSessionAt(row: Int) {
-        val session = manager.allSessions.getOrNull(row) ?: return
+    private fun viewColumn(modelIndex: Int): TableColumn =
+        table.columnModel.getColumn(table.convertColumnIndexToView(modelIndex))
+
+    private fun sessionAt(viewRow: Int): ReviewSession? {
+        if (viewRow < 0) return null
+        val modelRow = table.convertRowIndexToModel(viewRow)
+        return manager.allSessions.getOrNull(modelRow)
+    }
+
+    private fun doNewSession() {
+        val newSession = manager.newSession(manager.defaultSessionName())
+        tableModel.fireTableDataChanged()
+        val modelRow = manager.allSessions.indexOfFirst { it.id == newSession.id }
+        if (modelRow >= 0) {
+            val viewRow = table.convertRowIndexToView(modelRow)
+            if (viewRow >= 0) {
+                table.setRowSelectionInterval(viewRow, viewRow)
+            }
+        }
+        ReviewToolWindowFactory.refresh(project)
+        updateButtons()
+    }
+
+    private fun renameSessionAt(viewRow: Int) {
+        val session = sessionAt(viewRow) ?: return
         val newName = Messages.showInputDialog(
             project,
             "Enter a new name for the session:",
@@ -152,8 +262,8 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
         }
     }
 
-    private fun deleteSessionAt(row: Int) {
-        val session = manager.allSessions.getOrNull(row) ?: return
+    private fun deleteSessionAt(viewRow: Int) {
+        val session = sessionAt(viewRow) ?: return
         val confirm = Messages.showYesNoDialog(
             project,
             "Delete session \"${session.name}\" (${session.comments.size} comments)?",
@@ -188,9 +298,8 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun doOpenAction() {
-        val row = table.selectedRow
-        if (row < 0) return
-        manager.switchSession(manager.allSessions[row].id)
+        val session = sessionAt(table.selectedRow) ?: return
+        manager.switchSession(session.id)
         ReviewToolWindowFactory.refresh(project)
         close(OK_EXIT_CODE)
     }
