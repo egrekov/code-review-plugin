@@ -2,6 +2,7 @@ package com.codereview.plugin
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
@@ -19,11 +20,7 @@ class ReviewCommentDialog(
     reference: String = ""
 ) : DialogWrapper(project) {
 
-    private val commentArea = JBTextArea(5, 50).apply {
-        lineWrap = true
-        wrapStyleWord = true
-        font = Font("Arial", Font.PLAIN, 13)
-    }
+    private val commentEditor = CommentEditorPanel()
 
     private val codeArea = JBTextArea(dedent(selectedText)).apply {
         font = Font("JetBrains Mono", Font.PLAIN, 12)
@@ -76,27 +73,32 @@ class ReviewCommentDialog(
         refPanel.add(referenceField, BorderLayout.CENTER)
         centerPanel.add(refPanel, BorderLayout.NORTH)
 
-        // Code preview
+        // Comment input
+        val commentPanel = JPanel(BorderLayout(0, 4))
+        commentPanel.add(JLabel("Comment:"), BorderLayout.NORTH)
+        commentPanel.add(commentEditor, BorderLayout.CENTER)
+
+        // Code preview + comment split by a resizable divider
         if (codeArea.text.isNotBlank()) {
             val codePanel = JPanel(BorderLayout(0, 4))
             codePanel.add(JLabel("Selected code:"), BorderLayout.NORTH)
             codePanel.add(JBScrollPane(codeArea), BorderLayout.CENTER)
-            centerPanel.add(codePanel, BorderLayout.CENTER)
-        }
 
-        // Comment input
-        val commentPanel = JPanel(BorderLayout(0, 4))
-        commentPanel.add(JLabel("Comment:"), BorderLayout.NORTH)
-        commentPanel.add(JBScrollPane(commentArea), BorderLayout.CENTER)
-        centerPanel.add(commentPanel, BorderLayout.SOUTH)
+            val splitter = JBSplitter(true, 0.45f)
+            splitter.firstComponent = codePanel
+            splitter.secondComponent = commentPanel
+            centerPanel.add(splitter, BorderLayout.CENTER)
+        } else {
+            centerPanel.add(commentPanel, BorderLayout.CENTER)
+        }
 
         panel.add(centerPanel, BorderLayout.CENTER)
         return panel
     }
 
-    override fun getPreferredFocusedComponent() = commentArea
+    override fun getPreferredFocusedComponent() = commentEditor.commentArea
 
-    fun getComment(): String = commentArea.text.trim()
+    fun getComment(): String = commentEditor.getComment()
     fun getReference(): String = referenceField.text.trim()
     fun getSelectedText(): String = codeArea.text.trim()
 }
