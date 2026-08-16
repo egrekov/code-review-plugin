@@ -17,10 +17,6 @@ class ReviewState(private val project: Project) {
         manager.newSession(name)
     }
 
-    fun stopReview() {
-        manager.markActiveFinished()
-    }
-
     fun addComment(
         filePath: String,
         lineStart: Int,

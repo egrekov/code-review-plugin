@@ -28,7 +28,6 @@ import javax.swing.border.EmptyBorder
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.TableCellRenderer
-import javax.swing.table.TableColumn
 import javax.swing.table.TableRowSorter
 
 class SessionManagerDialog(private val project: Project) : DialogWrapper(project) {
@@ -39,12 +38,11 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
     companion object {
         private const val ACTIVE_COLUMN = 0
         private const val NAME_COLUMN = 1
-        private const val STATUS_COLUMN = 2
-        private const val CREATED_COLUMN = 3
+        private const val CREATED_COLUMN = 2
     }
 
     private val tableModel = object : AbstractTableModel() {
-        private val columns = arrayOf("", "Name", "Status", "Created")
+        private val columns = arrayOf("", "Name", "Created")
 
         override fun getRowCount(): Int = manager.allSessions.size
         override fun getColumnCount(): Int = columns.size
@@ -53,7 +51,6 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
         override fun getColumnClass(columnIndex: Int): Class<*> = when (columnIndex) {
             ACTIVE_COLUMN -> Integer::class.java
             NAME_COLUMN -> String::class.java
-            STATUS_COLUMN -> String::class.java
             else -> Long::class.java
         }
 
@@ -62,7 +59,6 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
             return when (column) {
                 ACTIVE_COLUMN -> if (session.id == manager.activeSessionId()) 1 else 0
                 NAME_COLUMN -> session.name
-                STATUS_COLUMN -> if (session.isActive) "In progress" else "Finished"
                 else -> session.createdAt
             }
         }
@@ -247,7 +243,6 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
             cellRenderer = createdCellRenderer
         }
         table.rowHeight = 22
-        table.removeColumn(viewColumn(STATUS_COLUMN))
 
         (table.rowSorter as TableRowSorter<*>).setSortKeys(
             listOf(RowSorter.SortKey(CREATED_COLUMN, SortOrder.DESCENDING))
@@ -296,9 +291,6 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
         deleteButton.isEnabled = hasSelection
         clearAllButton.isEnabled = hasSessions
     }
-
-    private fun viewColumn(modelIndex: Int): TableColumn =
-        table.columnModel.getColumn(table.convertColumnIndexToView(modelIndex))
 
     private fun sessionAt(viewRow: Int): ReviewSession? {
         if (viewRow < 0) return null

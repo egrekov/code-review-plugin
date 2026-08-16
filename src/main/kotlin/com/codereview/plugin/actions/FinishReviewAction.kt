@@ -2,7 +2,6 @@ package com.codereview.plugin.actions
 
 import com.codereview.plugin.ReviewReportDialog
 import com.codereview.plugin.ReviewState
-import com.codereview.plugin.ReviewToolWindowFactory
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -20,8 +19,6 @@ class FinishReviewAction : AnAction("Get Report", "Generate Redmine report", All
         }
 
         val report = state.generateRedmineReport()
-        state.stopReview()
-        ReviewToolWindowFactory.refresh(project)
         ReviewReportDialog(project, report).show()
     }
 

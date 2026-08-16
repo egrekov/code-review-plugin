@@ -69,10 +69,21 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
             val sessionName = ReviewSessionManager.getInstance(project).activeSession?.name
             commentsPanel.removeAll()
 
-            when {
-                !state.isReviewActive && state.comments.isEmpty() -> {
-                    statusLabel.text = "No active review"
-                    val hint = JLabel("<html><center>Press <b>▶</b> to start a new review session</center></html>").apply {
+            if (!state.isReviewActive && state.comments.isEmpty()) {
+                statusLabel.text = "No active review"
+                val hint = JLabel("<html><center>Press <b>▶</b> to start a new review session</center></html>").apply {
+                    horizontalAlignment = SwingConstants.CENTER
+                    foreground = Color.GRAY
+                    font = Font("Arial", Font.PLAIN, 12)
+                    alignmentX = Component.CENTER_ALIGNMENT
+                }
+                commentsPanel.add(Box.createVerticalGlue())
+                commentsPanel.add(hint)
+                commentsPanel.add(Box.createVerticalGlue())
+            } else {
+                statusLabel.text = "🟢 $sessionName — ${state.comments.size} comment(s)"
+                if (state.comments.isEmpty()) {
+                    val hint = JLabel("<html><center>Select code and press <b>Ctrl+Alt+R</b><br>or click <b>+</b> button above to add a comment</center></html>").apply {
                         horizontalAlignment = SwingConstants.CENTER
                         foreground = Color.GRAY
                         font = Font("Arial", Font.PLAIN, 12)
@@ -81,28 +92,7 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
                     commentsPanel.add(Box.createVerticalGlue())
                     commentsPanel.add(hint)
                     commentsPanel.add(Box.createVerticalGlue())
-                }
-                state.isReviewActive -> {
-                    statusLabel.text = "🟢 $sessionName — ${state.comments.size} comment(s)"
-                    if (state.comments.isEmpty()) {
-                        val hint = JLabel("<html><center>Select code and press <b>Ctrl+Alt+R</b><br>or click <b>+</b> button above to add a comment</center></html>").apply {
-                            horizontalAlignment = SwingConstants.CENTER
-                            foreground = Color.GRAY
-                            font = Font("Arial", Font.PLAIN, 12)
-                            alignmentX = Component.CENTER_ALIGNMENT
-                        }
-                        commentsPanel.add(Box.createVerticalGlue())
-                        commentsPanel.add(hint)
-                        commentsPanel.add(Box.createVerticalGlue())
-                    } else {
-                        state.comments.forEach { comment ->
-                            commentsPanel.add(CommentCard(project, comment))
-                            commentsPanel.add(Box.createVerticalStrut(6))
-                        }
-                    }
-                }
-                else -> {
-                    statusLabel.text = "Finished — $sessionName — ${state.comments.size} comment(s)"
+                } else {
                     state.comments.forEach { comment ->
                         commentsPanel.add(CommentCard(project, comment))
                         commentsPanel.add(Box.createVerticalStrut(6))

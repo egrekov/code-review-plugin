@@ -19,7 +19,14 @@ class ReviewSessionManager private constructor(private val project: Project) {
         get() = File(File(project.basePath ?: "", ".idea"), SESSIONS_FILE_NAME)
 
     private var sessions: MutableList<ReviewSession> = load()
-    private var activeSessionId: String? = null
+    private var activeSessionId: String? = sessions.filter { it.isActive }.maxByOrNull { it.createdAt }?.id
+
+    init {
+        if (sessions.any { it.isActive != (it.id == activeSessionId) }) {
+            sessions.forEach { it.isActive = it.id == activeSessionId }
+            save()
+        }
+    }
 
     val allSessions: List<ReviewSession> get() = sessions
 
@@ -34,6 +41,7 @@ class ReviewSessionManager private constructor(private val project: Project) {
             name = name.trim().ifEmpty { "Session ${sessions.size + 1}" },
             isActive = true
         )
+        sessions.forEach { it.isActive = false }
         sessions.add(session)
         activeSessionId = session.id
         save()
@@ -42,6 +50,7 @@ class ReviewSessionManager private constructor(private val project: Project) {
 
     fun switchSession(id: String) {
         sessions.find { it.id == id }?.let {
+            sessions.forEach { s -> s.isActive = false }
             activeSessionId = it.id
             it.isActive = true
             save()
@@ -53,7 +62,8 @@ class ReviewSessionManager private constructor(private val project: Project) {
         if (index < 0) return
         sessions.removeAt(index)
         if (activeSessionId == id) {
-            activeSessionId = sessions.firstOrNull()?.id
+            activeSessionId = null
+            sessions.forEach { it.isActive = false }
         }
         save()
     }
@@ -63,13 +73,6 @@ class ReviewSessionManager private constructor(private val project: Project) {
         if (trimmed.isEmpty()) return
         sessions.find { it.id == id }?.let { it.name = trimmed }
         save()
-    }
-
-    fun markActiveFinished() {
-        activeSession?.let {
-            it.isActive = false
-            save()
-        }
     }
 
     fun clearAllSessions() {
