@@ -1,3 +1,5 @@
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.0.21"
@@ -44,6 +46,13 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = pluginSinceBuild
             untilBuild = pluginUntilBuild
+        }
+    }
+
+    pluginVerification {
+        ides {
+            // Верифицируем против той же IDE, против которой собирается плагин
+            create(IntelliJPlatformType.PhpStorm, "2025.1")
         }
     }
 }
