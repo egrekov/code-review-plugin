@@ -53,6 +53,9 @@ jobs:
           files: |
             build/distributions/code-review-plugin-*.zip
             build/distributions/updatePlugins.xml
+          # Автоописание: список коммитов с прошлого тега + ссылка на diff.
+          # Описание можно потом отредактировать вручную в UI — это не трогает файлы и тег.
+          generate_release_notes: true
 
       - name: Stage repository files
         run: |
