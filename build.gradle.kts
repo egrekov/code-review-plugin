@@ -81,6 +81,10 @@ tasks {
         enabled = false
     }
 
+    named("buildPlugin") {
+        finalizedBy("generateUpdatePluginsXml")
+    }
+
     // Генерирует updatePlugins.xml для кастомного plugin repository.
     // URL до ZIP передаётся извне, чтобы задачу можно было использовать и в CI, и локально:
     //   ./gradlew generateUpdatePluginsXml -PpluginDownloadUrl=https://.../code-review-plugin-$appVersion.zip
