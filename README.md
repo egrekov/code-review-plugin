@@ -47,7 +47,19 @@ public function actionIndex(){
 }}
 ```
 
-## Сборка и установка
+## Установка через репозиторий плагинов
+
+**Settings → Plugins → ⚙️ → Manage Plugin Repositories → +**, добавить:
+
+```
+https://github.com/egrekov/code-review-plugin/releases/latest/download/updatePlugins.xml
+```
+
+После этого плагин **Code Review Helper** появится во вкладке Marketplace, а новые версии будут предлагаться при проверке обновлений (при старте IDE или **Help → Check for Updates**).
+
+URL постоянный — `latest` всегда указывает на последний релиз.
+
+## Сборка и установка из файла
 
 ### Требования
 - JDK 21
@@ -60,8 +72,9 @@ public function actionIndex(){
 ```
 
 Плагин появится в `build/distributions/code-review-plugin-{version}.zip`
+Рядом с ним генерируется `updatePlugins.xml` для кастомного репозитория (см. `generateUpdatePluginsXml` в `build.gradle.kts`).
 
-### Установка в PhpStorm
+### Установка из файла в PhpStorm
 
 1. **Settings → Plugins → ⚙️ → Install Plugin from Disk...**
 2. Выбрать `build/distributions/code-review-plugin-{version}.zip`
@@ -72,6 +85,28 @@ public function actionIndex(){
 ```bash
 ./gradlew runIde
 ```
+
+## Выпуск новой версии
+
+```bash
+echo "1.0.9" > .app_version
+git add -A && git commit -m "Версия 1.0.9"
+git tag v1.0.9 && git push origin master --tags
+```
+
+Дальше всё делает CI ([.github/workflows/release.yml](.github/workflows/release.yml)) по тегу `v*`:
+
+1. Проверяет, что тег совпадает с версией в `.app_version` (иначе прогон падает).
+2. Собирает плагин и прогоняет `verifyPlugin` — проверку совместимости с PhpStorm (верификатор работает против PhpStorm 2025.1).
+3. Публикует GitHub Release с ZIP-архивом и `updatePlugins.xml`.
+4. Дублирует `updatePlugins.xml` на GitHub Pages (для сетей, где `github.io` доступен — у некоторых провайдеров он заблокирован).
+
+Ссылки на репозиторий плагинов после релиза:
+
+| URL | Заметка |
+|-----|---------|
+| `https://github.com/egrekov/code-review-plugin/releases/latest/download/updatePlugins.xml` | основной, URL не меняется от релиза к релизу |
+| `https://egrekov.github.io/code-review-plugin/updatePlugins.xml` | запасной (GitHub Pages) |
 
 ## Структура проекта
 
