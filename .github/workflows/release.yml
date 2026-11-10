@@ -50,7 +50,9 @@ jobs:
       - name: Create GitHub Release with plugin ZIP
         uses: softprops/action-gh-release@v2
         with:
-          files: build/distributions/code-review-plugin-*.zip
+          files: |
+            build/distributions/code-review-plugin-*.zip
+            build/distributions/updatePlugins.xml
 
       - name: Stage repository files
         run: |
