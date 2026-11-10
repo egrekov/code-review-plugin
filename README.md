@@ -114,13 +114,19 @@ git tag v1.0.9 && git push origin master --tags
 src/main/
 ├── kotlin/com/codereview/plugin/
 │   ├── ReviewState.kt               # Состояние ревью, генерация отчёта
+│   ├── ReviewSession.kt             # Модели: ReviewComment, ReviewSession
+│   ├── ReviewSessionManager.kt      # Хранение и переключение сессий ревью
+│   ├── SessionManagerDialog.kt      # Диалог управления сессиями
+│   ├── CommentEditorPanel.kt        # Панель редактирования (комментарий, Selected code)
+│   ├── EditCommentDialog.kt         # Диалог редактирования существующего комментария
 │   ├── ReviewCommentDialog.kt       # Диалог добавления комментария
 │   ├── ReviewReportDialog.kt        # Диалог финального отчёта
 │   ├── ReviewToolWindowFactory.kt   # Боковая панель
 │   └── actions/
 │       ├── StartReviewAction.kt     # Кнопка ▶ Старт
 │       ├── AddCommentAction.kt      # Кнопка + / Ctrl+Alt+R
-│       └── FinishReviewAction.kt    # Кнопка 📋 Отчёт
+│       ├── FinishReviewAction.kt    # Кнопка 📋 Отчёт
+│       └── SessionsAction.kt        # Кнопка списка сохранённых сессий
 └── resources/META-INF/
     └── plugin.xml
 ```
