@@ -31,7 +31,7 @@ intellijPlatform {
         description = "Simple code review tool with Redmine export"
         ideaVersion {
             sinceBuild = "243"
-            untilBuild = "262.*"
+            untilBuild = "263.*"
         }
     }
 }
