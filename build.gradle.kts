@@ -2,7 +2,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.0.21"
+    id("org.jetbrains.kotlin.jvm") version "2.3.0"
     id("org.jetbrains.intellij.platform") version "2.12.0"
 }
 
@@ -11,7 +11,7 @@ val appVersion = file(".app_version").readText().trim()
 version = appVersion
 
 // Диапазон совместимых сборок IDE — используется и в plugin.xml, и в updatePlugins.xml
-val pluginSinceBuild = "243"
+val pluginSinceBuild = "251"
 val pluginUntilBuild = "263.*"
 
 // id берём из plugin.xml, чтобы не было расхождений
@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        phpstorm("2025.1")
+        phpstorm("2026.3")
         bundledPlugin("com.intellij.modules.vcs")
         bundledPlugin("Git4Idea")
     }
@@ -51,8 +51,11 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            // Верифицируем против той же IDE, против которой собирается плагин
+            // Проверяем обе границы диапазона совместимости: нижнюю (самая старая
+            // поддерживаемая IDE — там могут отсутствовать API, использованные в коде)
+            // и верхнюю (та же IDE, против которой собирается плагин)
             create(IntelliJPlatformType.PhpStorm, "2025.1")
+            create(IntelliJPlatformType.PhpStorm, "2026.3")
         }
     }
 }

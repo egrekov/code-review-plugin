@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -31,14 +32,16 @@ class AddCommentAction : AnAction("Add Comment (Ctrl+Alt+R)", "Add a review comm
         }
 
         val editor = e.getData(CommonDataKeys.EDITOR)
-            ?: FileEditorManager.getInstance(project).selectedTextEditor
+            // getService вместо FileEditorManager.getInstance: компиляция против 2026.3
+            // кладёт вызов через companion-объект, которого нет в 2025.1 (verifier)
+            ?: project.getService(FileEditorManager::class.java)?.selectedTextEditor
             ?: run {
                 Messages.showWarningDialog(project, "No file is open in the editor.", "No Editor")
                 return
             }
 
         val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE)
-            ?: FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
+            ?: project.getService(FileEditorManager::class.java)?.selectedFiles?.firstOrNull()
         val filePath = virtualFile?.path ?: "unknown"
 
         val selectionModel = editor.selectionModel

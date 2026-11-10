@@ -49,7 +49,7 @@ class SessionManagerDialog(private val project: Project) : DialogWrapper(project
         override fun getColumnName(column: Int): String = columns[column]
 
         override fun getColumnClass(columnIndex: Int): Class<*> = when (columnIndex) {
-            ACTIVE_COLUMN -> Integer::class.java
+            ACTIVE_COLUMN -> Int::class.java
             NAME_COLUMN -> String::class.java
             else -> Long::class.java
         }

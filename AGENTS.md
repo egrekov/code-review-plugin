@@ -1,13 +1,14 @@
 # AGENTS.md — инструкции для агентов
 
 PhpStorm-плагин «Code Review Helper»: code review в IDE с экспортом отчёта в формат Redmine (Textile).
-Kotlin, Gradle (Kotlin DSL), `org.jetbrains.intellij.platform` 2.12.0, целевая IDE — PhpStorm 2025.1+.
+Kotlin, Gradle (Kotlin DSL), `org.jetbrains.intellij.platform` 2.12.0, целевая IDE — PhpStorm 2026.3
+(совместимость заявлена с 2025.1+, см. `pluginSinceBuild` в build.gradle.kts).
 
 ## Команды
 
 ```bash
 ./gradlew buildPlugin       # сборка ZIP в build/distributions/ (+ автогенерация updatePlugins.xml)
-./gradlew verifyPlugin      # проверка совместимости верификатором (против PhpStorm 2025.1)
+./gradlew verifyPlugin      # проверка совместимости верификатором (против PhpStorm 2026.3)
 ./gradlew runIde            # запуск песочницы IDE с плагином
 ```
 
