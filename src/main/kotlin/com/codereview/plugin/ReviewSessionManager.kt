@@ -45,6 +45,7 @@ class ReviewSessionManager private constructor(private val project: Project) {
         sessions.add(session)
         activeSessionId = session.id
         save()
+        ReviewHighlighter.getInstance(project).refresh()
         return session
     }
 
@@ -54,6 +55,7 @@ class ReviewSessionManager private constructor(private val project: Project) {
             activeSessionId = it.id
             it.isActive = true
             save()
+            ReviewHighlighter.getInstance(project).refresh()
         }
     }
 
@@ -64,6 +66,7 @@ class ReviewSessionManager private constructor(private val project: Project) {
         if (activeSessionId == id) {
             activeSessionId = null
             sessions.forEach { it.isActive = false }
+            ReviewHighlighter.getInstance(project).refresh()
         }
         save()
     }
@@ -79,6 +82,7 @@ class ReviewSessionManager private constructor(private val project: Project) {
         sessions.clear()
         activeSessionId = null
         save()
+        ReviewHighlighter.getInstance(project).refresh()
     }
 
     fun saveActiveSession() {

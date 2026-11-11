@@ -16,6 +16,8 @@
             id="Code Review"
             anchor="bottom"
             factoryClass="com.codereview.plugin.ReviewToolWindowFactory"/>
+        <projectService serviceImplementation="com.codereview.plugin.ReviewHighlighter"/>
+        <postStartupActivity implementation="com.codereview.plugin.ReviewHighlighterStartupActivity"/>
     </extensions>
 
     <actions>

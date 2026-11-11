@@ -36,6 +36,7 @@ class ReviewState(private val project: Project) {
         session.comments.add(comment)
         session.isActive = true
         manager.saveActiveSession()
+        ReviewHighlighter.getInstance(project).refresh()
         return comment
     }
 
@@ -43,6 +44,7 @@ class ReviewState(private val project: Project) {
         val session = manager.activeSession ?: return
         session.comments.removeIf { it.id == id }
         manager.saveActiveSession()
+        ReviewHighlighter.getInstance(project).refresh()
     }
 
     fun updateComment(id: Int, newComment: String, newReference: String, newSelectedText: String? = null) {
@@ -53,6 +55,7 @@ class ReviewState(private val project: Project) {
             newSelectedText?.let { comment.selectedText = it }
         }
         manager.saveActiveSession()
+        ReviewHighlighter.getInstance(project).refresh()
     }
 
     private fun dedent(text: String): String {
