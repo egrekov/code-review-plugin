@@ -12,7 +12,10 @@ import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.text.BadLocationException
 
-class CommentEditorPanel(initialText: String = "") : JPanel(BorderLayout(0, 4)) {
+class CommentEditorPanel(
+    initialText: String = "",
+    private val format: ReviewFormat = ReviewFormat.TEXTILE
+) : JPanel(BorderLayout(0, 4)) {
 
     val commentArea = JBTextArea(initialText, 5, 50).apply {
         lineWrap = true
@@ -41,22 +44,42 @@ class CommentEditorPanel(initialText: String = "") : JPanel(BorderLayout(0, 4)) 
         }
 
     private fun codeBlockButton(label: String, language: String): JButton =
-        toolbarButton(label, Font.PLAIN, "$language block") {
-            wrap("<pre><code class=\"$language\">\n", "\n</code></pre>")
+        when (format) {
+            ReviewFormat.TEXTILE -> toolbarButton(label, Font.PLAIN, "$language block") {
+                wrap("<pre><code class=\"$language\">\n", "\n</code></pre>")
+            }
+            ReviewFormat.MARKDOWN -> toolbarButton(label, Font.PLAIN, "$language block") {
+                wrap("```$language\n", "\n```")
+            }
         }
 
     init {
         val toolbar = JPanel(FlowLayout(FlowLayout.LEFT, 2, 0)).apply { isOpaque = false }
-        toolbar.add(toolbarButton("B", Font.BOLD, "Bold") { wrap("*", "*") })
-        toolbar.add(toolbarButton("I", Font.ITALIC, "Italic") { wrap("_", "_") })
-        toolbar.add(toolbarButton("U", Font.PLAIN, "Underline") { wrap("+", "+") })
-        toolbar.add(toolbarButton("S", Font.PLAIN, "Strikethrough") { wrap("-", "-") })
-        toolbar.add(toolbarButton("</>", Font.PLAIN, "Insert inline code") { wrap("@", "@") })
-        toolbar.add(toolbarButton("H1", Font.BOLD, "Heading 1") { applyLinePrefix("h1. ") })
-        toolbar.add(toolbarButton("H2", Font.BOLD, "Heading 2") { applyLinePrefix("h2. ") })
-        toolbar.add(toolbarButton("H3", Font.BOLD, "Heading 3") { applyLinePrefix("h3. ") })
-        toolbar.add(toolbarButton("•", Font.BOLD, "Bulleted list") { applyLinePrefix("* ") })
-        toolbar.add(toolbarButton("1.", Font.BOLD, "Numbered list") { applyLinePrefix("# ") })
+        when (format) {
+            ReviewFormat.TEXTILE -> {
+                toolbar.add(toolbarButton("B", Font.BOLD, "Bold") { wrap("*", "*") })
+                toolbar.add(toolbarButton("I", Font.ITALIC, "Italic") { wrap("_", "_") })
+                toolbar.add(toolbarButton("U", Font.PLAIN, "Underline") { wrap("+", "+") })
+                toolbar.add(toolbarButton("S", Font.PLAIN, "Strikethrough") { wrap("-", "-") })
+                toolbar.add(toolbarButton("</>", Font.PLAIN, "Insert inline code") { wrap("@", "@") })
+                toolbar.add(toolbarButton("H1", Font.BOLD, "Heading 1") { applyLinePrefix("h1. ") })
+                toolbar.add(toolbarButton("H2", Font.BOLD, "Heading 2") { applyLinePrefix("h2. ") })
+                toolbar.add(toolbarButton("H3", Font.BOLD, "Heading 3") { applyLinePrefix("h3. ") })
+                toolbar.add(toolbarButton("•", Font.BOLD, "Bulleted list") { applyLinePrefix("* ") })
+                toolbar.add(toolbarButton("1.", Font.BOLD, "Numbered list") { applyLinePrefix("# ") })
+            }
+            ReviewFormat.MARKDOWN -> {
+                toolbar.add(toolbarButton("B", Font.BOLD, "Bold") { wrap("**", "**") })
+                toolbar.add(toolbarButton("I", Font.ITALIC, "Italic") { wrap("*", "*") })
+                toolbar.add(toolbarButton("S", Font.PLAIN, "Strikethrough") { wrap("~~", "~~") })
+                toolbar.add(toolbarButton("</>", Font.PLAIN, "Insert inline code") { wrap("`", "`") })
+                toolbar.add(toolbarButton("H1", Font.BOLD, "Heading 1") { applyLinePrefix("# ") })
+                toolbar.add(toolbarButton("H2", Font.BOLD, "Heading 2") { applyLinePrefix("## ") })
+                toolbar.add(toolbarButton("H3", Font.BOLD, "Heading 3") { applyLinePrefix("### ") })
+                toolbar.add(toolbarButton("•", Font.BOLD, "Bulleted list") { applyLinePrefix("- ") })
+                toolbar.add(toolbarButton("1.", Font.BOLD, "Numbered list") { applyLinePrefix("1. ") })
+            }
+        }
         toolbar.add(codeBlockButton("{php}", "php"))
         toolbar.add(codeBlockButton("{sql}", "sql"))
         toolbar.add(codeBlockButton("{json}", "json"))

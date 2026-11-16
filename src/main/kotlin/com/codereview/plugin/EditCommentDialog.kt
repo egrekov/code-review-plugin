@@ -16,7 +16,10 @@ class EditCommentDialog(
     private val comment: ReviewComment
 ) : DialogWrapper(project) {
 
-    private val commentEditor = CommentEditorPanel(comment.comment)
+    private val commentEditor = CommentEditorPanel(
+        comment.comment,
+        ReviewSessionManager.getInstance(project).activeSession?.sessionFormat ?: ReviewFormat.TEXTILE
+    )
 
     private val codeArea = JBTextArea(dedent(comment.selectedText)).apply {
         font = Font("JetBrains Mono", Font.PLAIN, 12)

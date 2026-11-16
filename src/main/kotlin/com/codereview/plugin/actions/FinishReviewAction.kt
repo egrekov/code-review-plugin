@@ -1,13 +1,15 @@
 package com.codereview.plugin.actions
 
+import com.codereview.plugin.ReviewFormat
 import com.codereview.plugin.ReviewReportDialog
+import com.codereview.plugin.ReviewSessionManager
 import com.codereview.plugin.ReviewState
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
 
-class FinishReviewAction : AnAction("Get Report", "Generate Redmine report", AllIcons.Actions.Copy) {
+class FinishReviewAction : AnAction("Get Report", "Generate review report", AllIcons.Actions.Copy) {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
@@ -18,8 +20,9 @@ class FinishReviewAction : AnAction("Get Report", "Generate Redmine report", All
             return
         }
 
-        val report = state.generateRedmineReport()
-        ReviewReportDialog(project, report).show()
+        val format = ReviewSessionManager.getInstance(project).activeSession?.sessionFormat ?: ReviewFormat.TEXTILE
+        val report = state.generateReport(format)
+        ReviewReportDialog(project, report, format).show()
     }
 
     override fun update(e: AnActionEvent) {

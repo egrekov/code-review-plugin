@@ -76,25 +76,45 @@ class ReviewState(private val project: Project) {
         }.joinToString("\n").trim()
     }
 
-    fun generateRedmineReport(): String {
+    fun generateReport(format: ReviewFormat): String {
         if (comments.isEmpty()) return "No review comments."
 
         val sb = StringBuilder()
-        sb.appendLine("{{Collapse(Ревью)")
+        when (format) {
+            // Пустая строка после <summary> обязательна — без неё Markdown-блоки не рендерятся внутри details
+            ReviewFormat.TEXTILE -> sb.appendLine("{{Collapse(Ревью)")
+            ReviewFormat.MARKDOWN -> {
+                sb.appendLine("<details>")
+                sb.appendLine("<summary>Ревью</summary>")
+                sb.appendLine()
+            }
+        }
 
         comments.forEachIndexed { index, comment ->
             val num = index + 1
             val isLast = index == comments.size - 1
             sb.append("$num. ")
             if (comment.reference.isNotBlank()) {
-                sb.appendLine("@${comment.reference}@")
+                when (format) {
+                    ReviewFormat.TEXTILE -> sb.appendLine("@${comment.reference}@")
+                    ReviewFormat.MARKDOWN -> sb.appendLine("`${comment.reference}`")
+                }
             }
             sb.appendLine()
 
             if (comment.selectedText.isNotBlank()) {
-                sb.appendLine("<pre><code class=\"php\">")
-                sb.appendLine(dedent(comment.selectedText))
-                sb.appendLine("</code></pre>")
+                when (format) {
+                    ReviewFormat.TEXTILE -> {
+                        sb.appendLine("<pre><code class=\"php\">")
+                        sb.appendLine(dedent(comment.selectedText))
+                        sb.appendLine("</code></pre>")
+                    }
+                    ReviewFormat.MARKDOWN -> {
+                        sb.appendLine("```php")
+                        sb.appendLine(dedent(comment.selectedText))
+                        sb.appendLine("```")
+                    }
+                }
             }
 
             if (comment.comment.isNotBlank()) {
@@ -109,7 +129,10 @@ class ReviewState(private val project: Project) {
             }
         }
 
-        sb.append("}}")
+        when (format) {
+            ReviewFormat.TEXTILE -> sb.append("}}")
+            ReviewFormat.MARKDOWN -> sb.append("</details>")
+        }
         return sb.toString()
     }
 

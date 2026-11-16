@@ -6,6 +6,7 @@ import com.codereview.plugin.actions.SessionsAction
 import com.codereview.plugin.actions.StartReviewAction
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBScrollPane
@@ -48,6 +49,9 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
 
     private val statusLabel = JLabel()
     private val commentsPanel = JPanel()
+    private val formatCombo = ComboBox<ReviewFormat>(ReviewFormat.entries.toTypedArray())
+    // Программное выставление выбора в refresh() не должно триггерить сохранение формата
+    private var updatingFormatCombo = false
 
     init {
         border = EmptyBorder(8, 8, 8, 8)
@@ -56,6 +60,17 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
         val topBar = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
         statusLabel.font = Font("Arial", Font.BOLD, 12)
         topBar.add(statusLabel)
+
+        formatCombo.toolTipText = "Comment and report format (stored per session)"
+        formatCombo.addActionListener {
+            if (updatingFormatCombo) return@addActionListener
+            val session = ReviewSessionManager.getInstance(project).activeSession
+            val selected = formatCombo.selectedItem as? ReviewFormat ?: return@addActionListener
+            if (session != null && selected != session.sessionFormat) {
+                ReviewSessionManager.getInstance(project).setSessionFormat(session.id, selected)
+            }
+        }
+        topBar.add(formatCombo)
 
         add(topBar, BorderLayout.NORTH)
         add(JBScrollPane(commentsPanel), BorderLayout.CENTER)
@@ -66,7 +81,14 @@ class ReviewPanel(private val project: Project) : JPanel(BorderLayout(8, 8)) {
     fun refresh() {
         SwingUtilities.invokeLater {
             val state = ReviewState.getInstance(project)
-            val sessionName = ReviewSessionManager.getInstance(project).activeSession?.name
+            val manager = ReviewSessionManager.getInstance(project)
+            val sessionName = manager.activeSession?.name
+
+            updatingFormatCombo = true
+            formatCombo.selectedItem = manager.activeSession?.sessionFormat
+            formatCombo.isEnabled = manager.activeSession != null
+            updatingFormatCombo = false
+
             commentsPanel.removeAll()
 
             if (!state.isReviewActive && state.comments.isEmpty()) {

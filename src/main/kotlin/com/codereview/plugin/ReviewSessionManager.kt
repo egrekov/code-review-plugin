@@ -39,7 +39,9 @@ class ReviewSessionManager private constructor(private val project: Project) {
         val session = ReviewSession(
             id = UUID.randomUUID().toString(),
             name = name.trim().ifEmpty { "Session ${sessions.size + 1}" },
-            isActive = true
+            isActive = true,
+            // Наследуем формат последней сессии, чтобы не переключать его заново каждую сессию
+            format = sessions.maxByOrNull { it.createdAt }?.format
         )
         sessions.forEach { it.isActive = false }
         sessions.add(session)
@@ -75,6 +77,11 @@ class ReviewSessionManager private constructor(private val project: Project) {
         val trimmed = newName.trim()
         if (trimmed.isEmpty()) return
         sessions.find { it.id == id }?.let { it.name = trimmed }
+        save()
+    }
+
+    fun setSessionFormat(id: String, format: ReviewFormat) {
+        sessions.find { it.id == id }?.let { it.format = format }
         save()
     }
 

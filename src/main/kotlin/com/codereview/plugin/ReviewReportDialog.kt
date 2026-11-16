@@ -12,7 +12,8 @@ import javax.swing.*
 
 class ReviewReportDialog(
     project: Project,
-    private val initialReport: String
+    private val initialReport: String,
+    format: ReviewFormat
 ) : DialogWrapper(project) {
 
     private val reportArea = JBTextArea(initialReport).apply {
@@ -23,7 +24,7 @@ class ReviewReportDialog(
     }
 
     init {
-        title = "Code Review Report — Redmine Format"
+        title = "Code Review Report — ${format.displayName}"
         setOKButtonText("Copy & Close")
         setCancelButtonText("Close")
         init()
@@ -69,7 +70,7 @@ class ReviewReportDialog(
         CopyPasteManager.getInstance().setContents(StringSelection(reportArea.text))
         JOptionPane.showMessageDialog(
             contentPane,
-            "Report copied to clipboard! Paste it into Redmine.",
+            "Report copied to clipboard!",
             "Copied!",
             JOptionPane.INFORMATION_MESSAGE
         )

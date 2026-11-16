@@ -1,6 +1,6 @@
 # Code Review Helper — PhpStorm Plugin
 
-Плагин для проведения code review прямо в PhpStorm с экспортом в формат Redmine.
+Плагин для проведения code review прямо в PhpStorm с экспортом отчёта в Redmine (Textile) или Markdown.
 
 ## Как пользоваться
 
@@ -29,7 +29,11 @@
 > Ревью не сбрасывается при открытии отчёта — можно продолжить добавлять комментарии.  
 > Новое ревью начинается только при повторном нажатии **▶** (с подтверждением).
 
-### Формат отчёта
+### Формат отчёта: Textile (Redmine) или Markdown
+
+Рядом со статусом сессии в панели «Code Review» есть переключатель формата — **Redmine (Textile)** и **Markdown**. Формат влияет и на кнопки форматирования в диалоге комментария, и на вид генерируемого отчёта. Выбор хранится в каждой сессии (в `.idea/code-review-sessions.json`), новые сессии наследуют формат последней. Сессии из старых версий плагина считаются Textile.
+
+Отчёт Redmine (Textile):
 
 ```
 {{Collapse(Ревью)
@@ -46,6 +50,21 @@ public function actionIndex(){
 # @\console\controllers\PingController::actionIndex@ Issue #3
 }}
 ```
+
+Отчёт Markdown (свёртка `<details>` рендерится на GitHub/GitLab):
+
+````text
+<details>
+<summary>Ревью</summary>
+
+1. `\console\controllers\PingController`
+
+```php
+class PingController extends Controller
+```
+
+</details>
+````
 
 ## Установка через репозиторий плагинов
 
